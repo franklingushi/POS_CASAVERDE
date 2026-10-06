@@ -72,7 +72,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
 .close{border:0;background:#EFF3F0;border-radius:9px;width:36px;height:36px}
 .modal-body{padding:18px}.pay-total{font-size:30px;font-weight:900;margin-bottom:15px}
 .pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pay-method{border:2px solid var(--line);background:#fff;border-radius:13px;padding:16px;font-weight:850;text-align:left}.pay-method.selected.cash{border-color:#2D855A;background:#EAF6EE}.pay-method.selected.qr{border-color:#C79C2E;background:#FFF7DD}
-.pay-method span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}
+.pay-method span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}.pay-method.selected{border-color:#2D855A;background:#EAF6EE}.pay-method.selected.qr{border-color:#C79C2E;background:#FFF7DD}.pay-method.selected.card{border-color:#5375B8;background:#EEF3FF}.pay-method.selected.transfer{border-color:#8B5E9C;background:#F7EEFA}.cancel{margin-top:8px;width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--danger);font-weight:800}
 .confirm{margin-top:14px;width:100%;padding:13px;border:0;border-radius:11px;background:var(--green);color:#fff;font-weight:900}
 .notice{margin-top:10px;padding:10px;border-radius:9px;background:#F7F8F7;color:var(--muted);font-size:12px}
 .report{padding:22px}.report h2{font-family:Georgia,serif}.report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.report-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.report-card strong{font-size:23px;display:block}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.filters select{padding:9px;border:1px solid var(--line);border-radius:9px;background:#fff}.sales-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}.sales-table th,.sales-table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}.sales-table th{background:#F0F5F2;color:var(--green)}
@@ -143,11 +143,15 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
     <div class="report-card"><strong id="rMonth">Bs 0</strong><span>Ventas del mes</span></div>
     <div class="report-card"><strong id="rCash">Bs 0</strong><span>Efectivo</span></div>
     <div class="report-card"><strong id="rQr">Bs 0</strong><span>QR</span></div>
+    <div class="report-card"><strong id="rCard">Bs 0</strong><span>Tarjeta</span></div>
+    <div class="report-card"><strong id="rTransfer">Bs 0</strong><span>Transferencia</span></div>
     <div class="report-card"><strong id="rTickets">0</strong><span>Comandas cobradas</span></div>
   </div>
   <div class="filters">
+    <select id="filterYear" aria-label="Filtrar por año"></select>
+    <select id="filterMonth" aria-label="Filtrar por mes"><option value="">Todos los meses</option><option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select>
     <select id="filterRoom"><option value="">Todos los salones</option></select>
-    <select id="filterPay"><option value="">Todos los pagos</option><option value="Efectivo">Efectivo</option><option value="QR">QR</option></select>
+    <select id="filterPay"><option value="">Todos los pagos</option><option value="Efectivo">Efectivo</option><option value="QR">QR</option><option value="Tarjeta">Tarjeta</option><option value="Transferencia">Transferencia</option></select>
     <button class="action secondary" id="clearFilters">Limpiar filtros</button>
   </div>
   <div id="salesWrap"></div>
@@ -162,9 +166,12 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
       <div class="pay-methods">
         <button class="pay-method cash" data-method="Efectivo">💵 Efectivo<span>Registrar como efectivo</span></button>
         <button class="pay-method qr" data-method="QR">▣ QR<span>Registrar como pago QR</span></button>
+        <button class="pay-method card" data-method="Tarjeta">▤ Tarjeta<span>Registrar como pago con tarjeta</span></button>
+        <button class="pay-method transfer" data-method="Transferencia">⇄ Transferencia<span>Marcar como transferencia</span></button>
       </div>
       <div class="notice">El cobro no se considera terminado hasta confirmar el método. Al confirmar, la venta se registra y la mesa vuelve a estar libre.</div>
-      <button class="confirm" id="confirmPay">Confirmar cobro</button>
+      <button class="confirm" id="confirmPay">OK · Confirmar cobro</button>
+      <button class="cancel" id="cancelPay">Cancelar</button>
     </div>
   </div>
 </div>
@@ -219,8 +226,13 @@ const productos = [
 ["P039","Arroces","Arroz de Costilla de Res Braseada",168],
 ["P040","Postres","Tiramisú Verde",47],
 ["P041","Postres","Milhoja de Crepe con Dulce de Leche",51],
-["P042","Postres","Milhojas de Vainilla Choco Banana",58]
-].map(([id,categoria,nombre,precio])=>({id,categoria,nombre,precio}));
+["P042","Postres","Milhojas de Vainilla Choco Banana",58],
+["P043","Almuerzo","Menú de almuerzo",90],
+["P044","Quesos","Queso a la carta",0,true],
+["P045","Vinos","Botella de vino a la carta",0,true],
+["P046","Cócteles","Cóctel a la carta",0,true],
+["P047","Bebidas","Bebida a la carta",0,true]
+].map(([id,categoria,nombre,precio,editable=false])=>({id,categoria,nombre,precio,editable}));
 
 /* =========================
    MAPA REAL CASA VERDE
@@ -272,7 +284,9 @@ function saveState(){localStorage.setItem(KEY,JSON.stringify(state))}
 const money=n=>"Bs "+Number(n||0).toLocaleString("es-BO",{minimumFractionDigits:0,maximumFractionDigits:2});
 const getProduct=id=>productos.find(p=>p.id===id);
 const getMesa=id=>state.mesas.find(m=>m.id===id);
-function subtotal(m){return (m?.comanda||[]).reduce((s,l)=>s+getProduct(l.productoId).precio*l.cantidad,0)}
+function unitPrice(l){return Number(l.precio ?? getProduct(l.productoId)?.precio ?? 0)}
+function lineName(l){return l.nombre || getProduct(l.productoId)?.nombre || "Producto desconocido"}
+function subtotal(m){return (m?.comanda||[]).reduce((s,l)=>s+unitPrice(l)*l.cantidad,0)}
 function iva(m){return m?.iva ? subtotal(m)*IVA_RATE : 0}
 function total(m){return subtotal(m)+iva(m)}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.remove("hidden");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.add("hidden"),2200)}
@@ -284,9 +298,18 @@ function openTable(id){
 }
 function addProduct(pid){
  const m=getMesa(state.selected);if(!m){toast("Primero selecciona una mesa.");return}
- if(m.estado==="libre"){m.estado="abierta";m.abiertaEn=new Date().toISOString()}
- const line=m.comanda.find(x=>x.productoId===pid);
- if(line) line.cantidad++; else m.comanda.push({productoId:pid,cantidad:1});
+ const p=getProduct(pid);if(!p)return;
+ if(p.editable){
+  const nombre=prompt(`Nombre para ${p.nombre}:`,p.nombre);if(!nombre?.trim())return;
+  const raw=prompt(`Precio en Bs para ${nombre}:`,"");const precio=Number(String(raw).replace(",","."));
+  if(!Number.isFinite(precio)||precio<0){toast("Precio no válido");return}
+  if(m.estado==="libre"){m.estado="abierta";m.abiertaEn=new Date().toISOString()}
+  m.comanda.push({productoId:pid,cantidad:1,nombre:nombre.trim(),precio});
+ }else{
+  if(m.estado==="libre"){m.estado="abierta";m.abiertaEn=new Date().toISOString()}
+  const line=m.comanda.find(x=>x.productoId===pid&&!x.nombre);
+  if(line) line.cantidad++; else m.comanda.push({productoId:pid,cantidad:1});
+ }
  saveState();renderPanel();renderTables();toast("Producto agregado");
 }
 function changeQty(pid,delta){
@@ -317,7 +340,7 @@ function confirmPay(){
  const sale={
   id:"V"+Date.now(),fecha:new Date().toISOString(),mesa:m.numero,salon:m.salon,zona:m.zona,
   subtotal:subtotal(m),iva:iva(m),total:total(m),metodo:selectedPayment,
-  items:m.comanda.map(l=>({productoId:l.productoId,cantidad:l.cantidad}))
+  items:m.comanda.map(l=>({productoId:l.productoId,nombre:lineName(l),precio:unitPrice(l),cantidad:l.cantidad}))
  };
  state.ventas.push(sale);
  Object.assign(m,{estado:"libre",abiertaEn:null,comanda:[],iva:false,despachada:false});
@@ -351,7 +374,7 @@ function renderTables(){
 function renderMenu(){
  const q=(document.getElementById("menuSearch").value||"").toLowerCase();
  const filtered=productos.filter(p=>`${p.nombre} ${p.categoria}`.toLowerCase().includes(q));
- document.getElementById("menu").innerHTML=filtered.map(p=>`<div class="menuitem"><div><div class="name">${p.nombre}</div><div class="cat">${p.categoria}</div></div><div style="text-align:right"><strong>${money(p.precio)}</strong><br><button class="add" data-add="${p.id}">+</button></div></div>`).join("");
+ document.getElementById("menu").innerHTML=filtered.map(p=>`<div class="menuitem"><div><div class="name">${p.nombre}</div><div class="cat">${p.categoria}${p.editable?" · precio editable":""}</div></div><div style="text-align:right"><strong>${money(p.precio)}</strong><br><button class="add" data-add="${p.id}">+</button></div></div>`).join("");
  document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addProduct(b.dataset.add));
 }
 function renderPanel(){
@@ -360,7 +383,7 @@ function renderPanel(){
  document.getElementById("selectedMeta").textContent=m?`${m.salon} · ${m.capacidad} pax · ${m.estado}`:"Abra una mesa para comenzar una comanda.";
  document.getElementById("orderEmpty").classList.toggle("hidden",!!m?.comanda?.length);
  document.getElementById("orderLines").innerHTML=m?.comanda?.map(l=>{
-  const p=getProduct(l.productoId);return `<div class="orderline"><div><strong>${p.nombre}</strong><br><small>${money(p.precio)} c/u</small></div><div class="qty"><button class="mini" data-minus="${p.id}">−</button><strong>${l.cantidad}</strong><button class="mini" data-plus="${p.id}">+</button></div></div>`
+  const p=getProduct(l.productoId);return `<div class="orderline"><div><strong>${lineName(l)}</strong><br><small>${money(unitPrice(l))} c/u</small></div><div class="qty"><button class="mini" data-minus="${p.id}">−</button><strong>${l.cantidad}</strong><button class="mini" data-plus="${p.id}">+</button></div></div>`
  }).join("")||"";
  document.querySelectorAll("[data-minus]").forEach(b=>b.onclick=()=>changeQty(b.dataset.minus,-1));
  document.querySelectorAll("[data-plus]").forEach(b=>b.onclick=()=>changeQty(b.dataset.plus,1));
@@ -370,11 +393,18 @@ function renderPanel(){
  document.getElementById("toggleIva").textContent=m?.iva?"Quitar IVA 13%":"Agregar IVA 13%";
 }
 function renderReports(){
- const month=new Date().toISOString().slice(0,7);
- const vm=state.ventas.filter(v=>v.fecha.slice(0,7)===month);
+ const now=new Date();
+ const years=[...new Set([String(now.getFullYear()),...state.ventas.map(v=>v.fecha.slice(0,4))])].sort().reverse();
+ const fy=document.getElementById("filterYear");const oldYear=fy.value;
+ fy.innerHTML='<option value="">Todos los años</option>'+years.map(y=>`<option value="${y}">${y}</option>`).join("");fy.value=years.includes(oldYear)?oldYear:"";
+ const month=document.getElementById("filterMonth").value;
+ const year=fy.value;
+ const vm=state.ventas.filter(v=>(!year||v.fecha.slice(0,4)===year)&&(!month||v.fecha.slice(5,7)===month));
  document.getElementById("rMonth").textContent=money(vm.reduce((s,v)=>s+v.total,0));
  document.getElementById("rCash").textContent=money(vm.filter(v=>v.metodo==="Efectivo").reduce((s,v)=>s+v.total,0));
  document.getElementById("rQr").textContent=money(vm.filter(v=>v.metodo==="QR").reduce((s,v)=>s+v.total,0));
+ document.getElementById("rCard").textContent=money(vm.filter(v=>v.metodo==="Tarjeta").reduce((s,v)=>s+v.total,0));
+ document.getElementById("rTransfer").textContent=money(vm.filter(v=>v.metodo==="Transferencia").reduce((s,v)=>s+v.total,0));
  document.getElementById("rTickets").textContent=vm.length;
  const rooms=[...new Set(state.ventas.map(v=>v.salon))].sort();
  const fr=document.getElementById("filterRoom");const old=fr.value;
@@ -397,8 +427,11 @@ document.getElementById("saveOrder").onclick=saveOrder;
 document.getElementById("dispatch").onclick=dispatchOrder;
 document.getElementById("charge").onclick=openPay;
 document.getElementById("closePay").onclick=()=>document.getElementById("payModal").classList.add("hidden");
-document.querySelectorAll(".pay-method").forEach(b=>b.onclick=()=>{selectedPayment=b.dataset.method;document.querySelectorAll(".pay-method").forEach(x=>x.classList.remove("selected"));b.classList.add("selected",b.dataset.method==="QR"?"qr":"cash")});
+document.getElementById("cancelPay").onclick=()=>document.getElementById("payModal").classList.add("hidden");
+document.querySelectorAll(".pay-method").forEach(b=>b.onclick=()=>{selectedPayment=b.dataset.method;document.querySelectorAll(".pay-method").forEach(x=>x.classList.remove("selected"));b.classList.add("selected",b.dataset.method.toLowerCase()==="qr"?"qr":b.dataset.method.toLowerCase()==="tarjeta"?"card":b.dataset.method.toLowerCase()==="transferencia"?"transfer":"cash")});
 document.getElementById("confirmPay").onclick=confirmPay;
+document.getElementById("filterYear").onchange=renderReports;
+document.getElementById("filterMonth").onchange=renderReports;
 document.getElementById("filterRoom").onchange=renderReports;
 document.getElementById("filterPay").onchange=renderReports;
 document.getElementById("clearFilters").onclick=()=>{document.getElementById("filterRoom").value="";document.getElementById("filterPay").value="";renderReports()};
