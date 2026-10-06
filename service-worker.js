@@ -1,4 +1,4 @@
-const CACHE = "casa-verde-pos-v2";
+const CACHE = "casa-verde-pos-v3";
 const APP_SHELL = [
   "./",
   "./index.html",

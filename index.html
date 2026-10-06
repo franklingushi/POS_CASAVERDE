@@ -129,6 +129,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
         <button class="action secondary" id="toggleIva">Agregar IVA</button>
         <button class="action gold" id="saveOrder">Guardar comanda</button>
         <button class="action secondary" id="dispatch">Despachar</button>
+        <button class="action danger hidden" id="releaseTable">Liberar mesa</button>
         <button class="action primary" id="charge">Cobrar</button>
       </div>
     </div>
@@ -323,6 +324,14 @@ function toggleIVA(){
  m.iva=!m.iva;saveState();renderPanel();
 }
 function saveOrder(){const m=getMesa(state.selected);if(!m){toast("No hay mesa seleccionada");return}saveState();toast("Comanda guardada")}
+function releaseTable(){
+ const m=getMesa(state.selected);if(!m||m.estado!=="abierta")return;
+ const hasOrder=m.comanda.length>0;
+ const message=hasOrder?`La mesa ${m.numero} tiene una comanda. ¿Cancelar la mesa y borrar la comanda sin registrar una venta?`:`¿Liberar la mesa ${m.numero} sin registrar una venta?`;
+ if(!confirm(message))return;
+ Object.assign(m,{estado:"libre",abiertaEn:null,comanda:[],iva:false,despachada:false});
+ state.selected=null;saveState();render();toast(hasOrder?"Mesa cancelada y liberada":"Mesa liberada");
+}
 function dispatchOrder(){
  const m=getMesa(state.selected);if(!m||!m.comanda.length){toast("No hay productos para despachar.");return}
  m.despachada=true;m.estado="despachada";saveState();render();toast("Comanda despachada");
@@ -382,6 +391,10 @@ function renderPanel(){
  document.getElementById("selectedTitle").textContent=m?`Mesa ${m.numero}`:"Seleccione una mesa";
  document.getElementById("selectedMeta").textContent=m?`${m.salon} · ${m.capacidad} pax · ${m.estado}`:"Abra una mesa para comenzar una comanda.";
  document.getElementById("orderEmpty").classList.toggle("hidden",!!m?.comanda?.length);
+ const release=document.getElementById("releaseTable");
+ const canRelease=m?.estado==="abierta";
+ release.classList.toggle("hidden",!canRelease);
+ release.textContent=m?.comanda?.length?"Cancelar mesa y borrar comanda":"Liberar mesa";
  document.getElementById("orderLines").innerHTML=m?.comanda?.map(l=>{
   const p=getProduct(l.productoId);return `<div class="orderline"><div><strong>${lineName(l)}</strong><br><small>${money(unitPrice(l))} c/u</small></div><div class="qty"><button class="mini" data-minus="${p.id}">−</button><strong>${l.cantidad}</strong><button class="mini" data-plus="${p.id}">+</button></div></div>`
  }).join("")||"";
@@ -424,6 +437,7 @@ document.getElementById("navBackup").onclick=()=>{
 document.getElementById("menuSearch").oninput=renderMenu;
 document.getElementById("toggleIva").onclick=toggleIVA;
 document.getElementById("saveOrder").onclick=saveOrder;
+document.getElementById("releaseTable").onclick=releaseTable;
 document.getElementById("dispatch").onclick=dispatchOrder;
 document.getElementById("charge").onclick=openPay;
 document.getElementById("closePay").onclick=()=>document.getElementById("payModal").classList.add("hidden");
