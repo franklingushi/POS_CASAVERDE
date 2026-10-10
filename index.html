@@ -217,6 +217,31 @@ button:focus-visible{outline:3px solid rgba(199,164,91,.75);outline-offset:2px}
  .pay-total{font-size:28px}
 }
 
+
+/* CASA VERDE · Fase 1 de diseño: consistencia visual únicamente */
+:root{
+  --cv-radius-sm:9px;
+  --cv-radius-md:13px;
+  --cv-radius-lg:17px;
+}
+button, input, select, textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;filter:saturate(.45);opacity:.62}
+input,select,textarea{color:var(--ink);background-color:#fff}
+input::placeholder,textarea::placeholder{color:#929D95}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid rgba(199,164,91,.68);outline-offset:2px
+}
+.navbtn,.tab,.action,.confirm,.add{font-weight:650}
+.metric,.room,.table,.menuitem,.report-card,.sales-table,.notice,.summary{
+  box-shadow:0 3px 12px rgba(24,55,41,.035)
+}
+.metric:hover,.report-card:hover{border-color:#D0DDD2}
+.orderline:last-child{border-bottom:0}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
 </style>
 
 <link rel="manifest" href="https://franklingushi.github.io/POS_CASAVERDE/manifest.json">
