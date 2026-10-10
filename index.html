@@ -106,6 +106,117 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
 @media(max-width:1050px){main{grid-template-columns:minmax(0,1fr) 360px}.content{padding:14px}.panel{padding:12px}}
 @media(max-width:780px){main{grid-template-columns:1fr}.panel{position:relative;top:auto;height:auto;max-height:none;border-left:0;border-top:1px solid var(--line)}.menu{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:12px}.pay-split-row{grid-template-columns:minmax(0,1fr) 100px auto}}
 
+
+/* CASA VERDE · Pulido visual premium. Solo presentación; no altera lógica ni datos. */
+:root{
+  --green:#123F30;
+  --green2:#1D654B;
+  --green3:#E6F0EA;
+  --cream:#F4F6F2;
+  --paper:#FFFFFF;
+  --ink:#1B332A;
+  --muted:#738078;
+  --gold:#C7A45B;
+  --line:#E0E7E1;
+  --danger:#B84242;
+  --success:#26764F;
+  --shadow:0 8px 24px rgba(24,55,41,.065);
+}
+body{background:linear-gradient(145deg,#F6F7F3 0%,#EEF2ED 100%);color:var(--ink);letter-spacing:.005em}
+header{background:linear-gradient(110deg,#103A2B 0%,#174C38 60%,#20563F 100%);padding:0 26px;box-shadow:0 5px 22px rgba(10,36,25,.18);border-bottom:1px solid rgba(199,164,91,.42)}
+header>img{filter:drop-shadow(0 2px 4px rgba(0,0,0,.12));max-height:54px}
+.brand h1{font-size:21px;letter-spacing:.13em;font-weight:600}
+.brand small{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#D6E4DA}
+.navbtn{border:1px solid rgba(255,255,255,.23);background:rgba(255,255,255,.07);padding:10px 15px;border-radius:11px;font-size:13px;font-weight:650;transition:background .18s,border-color .18s,transform .18s}
+.navbtn:hover{background:rgba(255,255,255,.15);transform:translateY(-1px)}
+.navbtn.active{background:#F8F7F0;color:var(--green);border-color:#F8F7F0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.content{padding:26px;min-width:0}
+.topbar{align-items:center;margin-bottom:21px}
+.topbar h2{font-size:31px;letter-spacing:-.025em;color:#193D2D}
+.topbar p{font-size:13px}
+.metric{border:1px solid #E1E8E1;border-radius:13px;padding:10px 15px;min-width:96px;box-shadow:0 3px 10px rgba(24,55,41,.025)}
+.metric strong{font-size:21px;letter-spacing:-.03em;color:#193D2D}
+.metric span{font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+.tabs{gap:7px;margin-bottom:20px;padding:3px 1px 6px}
+.tab{padding:10px 15px;border-radius:10px;font-size:12px;font-weight:750;transition:all .18s}
+.tab:not(.active):hover{background:#F1F6F1;border-color:#BDCDC1}
+.tab.active{box-shadow:0 3px 9px rgba(18,63,48,.16)}
+.rooms{gap:16px}
+.room{border:1px solid #E1E8E1;border-radius:17px;padding:18px;box-shadow:0 5px 18px rgba(22,53,39,.045)}
+.room h3{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.15em;color:#315E49;margin-bottom:15px}
+.room h3:after{content:"";height:1px;background:#E7ECE7;flex:1}
+.tables{gap:11px}
+.table{min-height:112px;border-width:1px;border-radius:14px;padding:14px;background:#FCFDFC;box-shadow:0 2px 6px rgba(22,53,39,.025);transition:transform .18s,box-shadow .18s,border-color .18s}
+.table:hover{transform:translateY(-2px);box-shadow:0 8px 17px rgba(22,53,39,.08);border-color:#8EAE99}
+.table .code{font-size:16px;letter-spacing:.015em}
+.table .meta{font-size:11px}
+.table .amount{font-size:13px}
+.table.free .dot{background:#AAB8AE}
+.table.open{background:#F0F8F1;border-color:#78B18A}
+.table.open .dot{background:#2C8B54;box-shadow:0 0 0 4px rgba(44,139,84,.10)}
+.table.sent{background:#FFFAEB;border-color:#D9BC65}
+.table.sent .dot{background:#C49525;box-shadow:0 0 0 4px rgba(196,149,37,.12)}
+.table.paid{background:#F3F5F3;border-color:#CDD5CE}
+.panel{background:rgba(255,255,255,.94);border-left:1px solid #E1E8E1;padding:20px;box-shadow:-8px 0 24px rgba(24,55,41,.025)}
+.panel h2{font-size:23px;letter-spacing:-.02em}
+.selected-meta{font-size:12px}
+.menu{gap:8px}
+.menuitem{border-color:#E2E9E3;background:#FCFDFC;border-radius:12px;transition:border-color .16s,background .16s,transform .16s}
+.menuitem:hover{border-color:#9CB9A5;background:#F7FAF7;transform:translateY(-1px)}
+.menuitem .name{font-size:12px;line-height:1.35}
+.menuitem .item-price{color:#234F39}
+.add{background:linear-gradient(135deg,#174D38,#21684B);border-radius:9px;box-shadow:0 2px 5px rgba(18,63,48,.13);transition:transform .15s,filter .15s}
+.add:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.search,.pay-split-row select,.pay-split-row input,.filters select{border-color:#DCE5DD;border-radius:10px;transition:border-color .15s,box-shadow .15s}
+.search:focus,.pay-split-row select:focus,.pay-split-row input:focus,.filters select:focus{outline:none;border-color:#6B9A7A;box-shadow:0 0 0 3px rgba(44,115,72,.11)}
+.order{border-color:#E1E8E1;background:#FFFFFF}
+.orderline{border-bottom-color:#E8EDE8}
+.mini{border-color:#DCE5DD}
+.summary{background:linear-gradient(145deg,#F2F7F2,#EAF2EB);border:1px solid #E1EAE1;border-radius:14px}
+.sumrow.total{color:#173F2E;border-top-color:#D9E4DA}
+.action,.confirm{border-radius:11px;transition:filter .16s,transform .16s,box-shadow .16s}
+.action:hover,.confirm:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.primary,.confirm{background:linear-gradient(135deg,#123F30,#216449);box-shadow:0 3px 8px rgba(18,63,48,.13)}
+.secondary{background:#EAF1EB;color:#24533B}
+.gold{background:#F5EAC9;color:#624C19}
+.modal-backdrop{backdrop-filter:blur(4px);background:rgba(9,29,20,.56)}
+.modal{border:1px solid rgba(255,255,255,.7);border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.28)}
+.modal-head{background:#FBFCFA;padding:19px 21px}
+.modal-head h3{font-size:21px}
+.modal-body{padding:21px}
+.pay-total{font-size:32px;letter-spacing:-.035em;color:#173F2E}
+.pay-split-row select,.pay-split-row input{padding:11px}
+.split-status{background:#F0F6F0;border:1px solid #E1EAE1;border-radius:11px;font-size:12px}
+.confirm{padding:14px;font-size:14px}
+.notice{border:1px solid #E6ECE6;background:#F8FAF8}
+.report{padding:26px}
+.report h2{font-size:30px;color:#193D2D}
+.report-card{border-color:#E1E8E1;border-radius:15px;box-shadow:var(--shadow)}
+.report-card strong{color:#193D2D;letter-spacing:-.025em}
+.sales-table{border-color:#E1E8E1;box-shadow:var(--shadow)}
+.sales-table th{background:#EDF3EE;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.sales-table td{font-variant-numeric:tabular-nums}
+.toast{background:#153F30;border:1px solid rgba(255,255,255,.15);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.2)}
+button:focus-visible{outline:3px solid rgba(199,164,91,.75);outline-offset:2px}
+@media(max-width:1000px){.content{padding:18px}.panel{padding:16px}}
+@media(max-width:650px){
+ header{padding:11px 13px;flex-wrap:wrap}
+ header>img{max-height:42px!important;margin-right:8px!important}
+ .brand h1{font-size:16px;letter-spacing:.09em}
+ .brand small{font-size:9px}
+ .header-actions{width:100%;gap:6px}
+ .navbtn{padding:9px 11px;font-size:12px}
+ .content,.report{padding:13px}
+ .topbar h2{font-size:26px}
+ .metric{padding:8px 10px;min-width:80px}
+ .room{padding:13px}
+ .tables{gap:8px}
+ .table{padding:11px;min-height:102px}
+ .panel{padding:13px}
+ .modal-body{padding:16px}
+ .pay-total{font-size:28px}
+}
+
 </style>
 
 <link rel="manifest" href="https://franklingushi.github.io/POS_CASAVERDE/manifest.json">
