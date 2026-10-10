@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0B4A34">
-<title>Casa Verde POS v9</title>
+<title>Casa Verde POS v9.1 · Comandas y pagos divididos</title>
 <style>
 :root{
   --green:#0B4A34; --green2:#176247; --green3:#E8F0EB;
@@ -52,10 +52,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
 .panel{background:#fff;border-left:1px solid var(--line);padding:18px;position:sticky;top:78px;height:calc(100vh - 78px);overflow:auto}
 .panel h2{margin:0;font-family:Georgia,serif}
 .selected-meta{color:var(--muted);font-size:13px;margin:5px 0 15px}
-.menu{display:grid;gap:8px}
-.menuitem{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid var(--line);background:#FAFCFB;border-radius:11px;padding:10px}
-.menuitem .name{font-weight:650;font-size:13px}.menuitem .cat{font-size:11px;color:var(--muted);margin-top:2px}
-.add{background:var(--green);color:#fff;border:0;border-radius:9px;padding:8px 10px;font-weight:700}
+.menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.menuitem{display:flex;justify-content:space-between;gap:6px;align-items:center;border:1px solid var(--line);background:#FAFCFB;border-radius:9px;padding:7px;min-width:0}.menuitem .name{font-weight:650;font-size:12px;line-height:1.25}.menuitem .cat{font-size:10px;color:var(--muted);margin-top:2px}.add{background:var(--green);color:#fff;border:0;border-radius:8px;padding:6px 9px;font-weight:700}.menu-catalog{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}.catalog-title{margin:0 0 8px;font-size:15px}.category-filters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}.category-filter{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:700}.category-filter.active{background:var(--green);color:#fff;border-color:var(--green)}@media(max-width:700px){.menu{grid-template-columns:1fr}}
 .search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#fff}
 .order{margin-top:15px;border-top:1px solid var(--line);padding-top:13px}
 .orderline{display:grid;grid-template-columns:1fr auto;gap:8px;padding:9px 0;border-bottom:1px dashed var(--line)}
@@ -74,7 +71,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
 .pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pay-method{border:2px solid var(--line);background:#fff;border-radius:13px;padding:16px;font-weight:850;text-align:left}.pay-method.selected.cash{border-color:#2D855A;background:#EAF6EE}.pay-method.selected.qr{border-color:#C79C2E;background:#FFF7DD}
 .pay-method span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}.pay-method.selected{border-color:#2D855A;background:#EAF6EE}.pay-method.selected.qr{border-color:#C79C2E;background:#FFF7DD}.pay-method.selected.card{border-color:#5375B8;background:#EEF3FF}.pay-method.selected.transfer{border-color:#8B5E9C;background:#F7EEFA}.cancel{margin-top:8px;width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--danger);font-weight:800}
 .confirm{margin-top:14px;width:100%;padding:13px;border:0;border-radius:11px;background:var(--green);color:#fff;font-weight:900}
-.notice{margin-top:10px;padding:10px;border-radius:9px;background:#F7F8F7;color:var(--muted);font-size:12px}
+.split-pay{margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:10px;display:grid;gap:8px}.split-pay>strong{font-size:13px}.split-pay label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}.split-pay input{width:110px;padding:7px;border:1px solid var(--line);border-radius:7px}.notice{margin-top:10px;padding:10px;border-radius:9px;background:#F7F8F7;color:var(--muted);font-size:12px}
 .report{padding:22px}.report h2{font-family:Georgia,serif}.report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.report-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.report-card strong{font-size:23px;display:block}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.filters select{padding:9px;border:1px solid var(--line);border-radius:9px;background:#fff}.sales-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}.sales-table th,.sales-table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}.sales-table th{background:#F0F5F2;color:var(--green)}
 .toast{position:fixed;right:18px;bottom:18px;background:#123E2E;color:#fff;padding:12px 15px;border-radius:10px;box-shadow:var(--shadow);z-index:100;font-weight:700}
 @media(max-width:1000px){main{grid-template-columns:1fr}.panel{position:static;height:auto;border-left:0;border-top:1px solid var(--line)}.report-grid{grid-template-columns:repeat(2,1fr)}}
@@ -117,8 +114,6 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
 <aside class="panel">
   <h2 id="selectedTitle">Seleccione una mesa</h2>
   <div id="selectedMeta" class="selected-meta">Abra una mesa para comenzar una comanda.</div>
-  <input id="menuSearch" class="search" placeholder="Buscar plato...">
-  <div id="menu" class="menu"></div>
   <div class="order"><h3>Comanda</h3><div id="orderLines"></div>
     <div id="orderEmpty" class="empty">Todavía no hay productos.</div>
     <div class="summary">
@@ -134,6 +129,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
       </div>
     </div>
   </div>
+  <div class="menu-catalog"><h3 class="catalog-title">Carta</h3><div id="categoryFilters" class="category-filters"></div><input id="menuSearch" class="search" placeholder="Buscar plato o bebida..."><div id="menu" class="menu"></div></div>
 </aside>
 </main>
 </div>
@@ -170,7 +166,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 390px;min-height:calc(100v
         <button class="pay-method card" data-method="Tarjeta">▤ Tarjeta<span>Registrar como pago con tarjeta</span></button>
         <button class="pay-method transfer" data-method="Transferencia">⇄ Transferencia<span>Marcar como transferencia</span></button>
       </div>
-      <div class="notice">El cobro no se considera terminado hasta confirmar el método. Al confirmar, la venta se registra y la mesa vuelve a estar libre.</div>
+      <div class="split-pay"><strong>Dividir pago (Bs)</strong><label>Efectivo <input id="splitCash" type="number" min="0" step="0.01" value="0"></label><label>QR <input id="splitQR" type="number" min="0" step="0.01" value="0"></label><label>Tarjeta <input id="splitCard" type="number" min="0" step="0.01" value="0"></label><label>Transferencia <input id="splitTransfer" type="number" min="0" step="0.01" value="0"></label><div>Asignado: <b id="splitAssigned">Bs 0</b> · Pendiente: <b id="splitRemaining">Bs 0</b></div></div><div class="notice">Los importes deben sumar exactamente el total de la cuenta.</div>
       <button class="confirm" id="confirmPay">OK · Confirmar cobro</button>
       <button class="cancel" id="cancelPay">Cancelar</button>
     </div>
@@ -232,7 +228,12 @@ const productos = [
 ["P044","Quesos","Queso a la carta",0,true],
 ["P045","Vinos","Botella de vino a la carta",0,true],
 ["P046","Cócteles","Cóctel a la carta",0,true],
-["P047","Bebidas","Bebida a la carta",0,true]
+["P047","Bebidas","Bebida a la carta",0,true],
+["P048","Cafetería","Café solo",15],
+["P049","Cafetería","Americano",18],
+["P050","Cafetería","Café con leche",25],
+["P051","Cafetería","Capuchino",25],
+["P052","Cafetería","Infusión de hierba fresca",15]
 ].map(([id,categoria,nombre,precio,editable=false])=>({id,categoria,nombre,precio,editable}));
 
 /* =========================
@@ -271,6 +272,7 @@ const defaultState=()=>({
 let state=loadState();
 let selectedPayment="Efectivo";
 let activeTab="Todas";
+let activeCategory="Todas";
 
 function loadState(){
  try{
@@ -336,26 +338,31 @@ function dispatchOrder(){
  const m=getMesa(state.selected);if(!m||!m.comanda.length){toast("No hay productos para despachar.");return}
  m.despachada=true;m.estado="despachada";saveState();render();toast("Comanda despachada");
 }
+function updateSplitBalance(){
+ const ids=["splitCash","splitQR","splitCard","splitTransfer"], vals=ids.map(id=>Math.max(0,Number(document.getElementById(id)?.value||0)));
+ const assigned=Math.round(vals.reduce((x,y)=>x+y,0)*100)/100, m=getMesa(state.selected), due=m?total(m):0;
+ document.getElementById("splitAssigned").textContent=money(assigned);document.getElementById("splitRemaining").textContent=money(Math.round((due-assigned)*100)/100);
+}
 function openPay(){
  const m=getMesa(state.selected);if(!m||!m.comanda.length){toast("No hay comanda para cobrar.");return}
- document.getElementById("payTitle").textContent=`Cobrar · Mesa ${m.numero}`;
- document.getElementById("payTotal").textContent=money(total(m));
+ document.getElementById("payTitle").textContent=`Cobrar · Mesa ${m.numero}`;document.getElementById("payTotal").textContent=money(total(m));
  selectedPayment="Efectivo";document.querySelectorAll(".pay-method").forEach(b=>b.classList.remove("selected"));
  document.querySelector('.pay-method[data-method="Efectivo"]').classList.add("selected","cash");
+ ["splitCash","splitQR","splitCard","splitTransfer"].forEach(id=>document.getElementById(id).value="0");document.getElementById("splitCash").value=total(m).toFixed(2);updateSplitBalance();
  document.getElementById("payModal").classList.remove("hidden");
 }
 function confirmPay(){
  const m=getMesa(state.selected);if(!m||!m.comanda.length)return;
- const sale={
-  id:"V"+Date.now(),fecha:new Date().toISOString(),mesa:m.numero,salon:m.salon,zona:m.zona,
-  subtotal:subtotal(m),iva:iva(m),total:total(m),metodo:selectedPayment,
-  items:m.comanda.map(l=>({productoId:l.productoId,nombre:lineName(l),precio:unitPrice(l),cantidad:l.cantidad}))
- };
- state.ventas.push(sale);
- Object.assign(m,{estado:"libre",abiertaEn:null,comanda:[],iva:false,despachada:false});
- state.selected=null;saveState();
- document.getElementById("payModal").classList.add("hidden");
- render();toast(`Venta registrada · ${selectedPayment} · ${money(sale.total)}`);
+ const ids=["splitCash","splitQR","splitCard","splitTransfer"], methods=["Efectivo","QR","Tarjeta","Transferencia"];
+ const amounts=ids.map(id=>Math.round(Math.max(0,Number(document.getElementById(id).value||0))*100)/100);
+ const assigned=Math.round(amounts.reduce((x,y)=>x+y,0)*100)/100,due=Math.round(total(m)*100)/100;
+ const pagos=amounts.map((importe,i)=>({metodo:methods[i],importe})).filter(p=>p.importe>0);
+ if(assigned!==due){toast(`El pago asignado debe sumar ${money(due)}. Actualmente: ${money(assigned)}.`);return}
+ if(!pagos.length){toast("Ingresa al menos un importe de pago.");return}
+ const metodo=pagos.length===1?pagos[0].metodo:"Dividido";
+ const sale={id:"V"+Date.now(),fecha:new Date().toISOString(),mesa:m.numero,salon:m.salon,zona:m.zona,subtotal:subtotal(m),iva:iva(m),total:due,metodo,pagos,items:m.comanda.map(l=>({productoId:l.productoId,nombre:lineName(l),precio:unitPrice(l),cantidad:l.cantidad}))};
+ state.ventas.push(sale);Object.assign(m,{estado:"libre",abiertaEn:null,comanda:[],iva:false,despachada:false});saveState();
+ document.getElementById("payModal").classList.add("hidden");render();toast(`Venta registrada · ${metodo} · ${money(sale.total)}`);
 }
 function renderTabs(){
  const tabs=["Todas","Sala A","Sala B","Barra","Privado","Sala C","Antesala","Terraza"];
@@ -382,8 +389,11 @@ function renderTables(){
 }
 function renderMenu(){
  const q=(document.getElementById("menuSearch").value||"").toLowerCase();
- const filtered=productos.filter(p=>`${p.nombre} ${p.categoria}`.toLowerCase().includes(q));
- document.getElementById("menu").innerHTML=filtered.map(p=>`<div class="menuitem"><div><div class="name">${p.nombre}</div><div class="cat">${p.categoria}${p.editable?" · precio editable":""}</div></div><div style="text-align:right"><strong>${money(p.precio)}</strong><br><button class="add" data-add="${p.id}">+</button></div></div>`).join("");
+ const cats=["Todas",...new Set(productos.map(p=>p.categoria))], cf=document.getElementById("categoryFilters");
+ cf.innerHTML=cats.map(c=>`<button class="category-filter ${activeCategory===c?"active":""}" data-category="${c}">${c}</button>`).join("");
+ cf.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderMenu()});
+ const filtered=productos.filter(p=>(activeCategory==="Todas"||p.categoria===activeCategory)&&`${p.nombre} ${p.categoria}`.toLowerCase().includes(q));
+ document.getElementById("menu").innerHTML=filtered.map(p=>`<div class="menuitem"><div><div class="name">${p.nombre}</div><div class="cat">${p.categoria}${p.editable?" · precio editable":""}</div></div><div style="text-align:right;white-space:nowrap"><strong>${money(p.precio)}</strong><br><button class="add" data-add="${p.id}">+</button></div></div>`).join("");
  document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>addProduct(b.dataset.add));
 }
 function renderPanel(){
