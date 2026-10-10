@@ -506,38 +506,44 @@ function dispatchOrder(){
 function openPay(){
  const m=getMesa(state.selected);if(!m||!m.comanda.length){toast("No hay comanda para cobrar.");return}
  document.getElementById("payTitle").textContent=`Cobrar · Mesa ${m.numero}`;
- document.getElementById("payTotal").textContent=money(total(m));
  paymentParts=[{metodo:"Efectivo",monto:Number(total(m).toFixed(2))}];
  renderPaymentParts();
  document.getElementById("payModal").classList.remove("hidden");
 }
 function renderPaymentParts(){
  const wrap=document.getElementById("paySplitList");
- wrap.innerHTML=paymentParts.map((p,i)=>`<div class="pay-split-row"><select data-pay-method="${i}" aria-label="Medio de pago ${i+1}"><option ${p.metodo==="Efectivo"?"selected":""}>Efectivo</option><option ${p.metodo==="QR"?"selected":""}>QR</option><option ${p.metodo==="Tarjeta"?"selected":""}>Tarjeta</option><option ${p.metodo==="Transferencia"?"selected":""}>Transferencia</option></select><input data-pay-amount="${i}" aria-label="Monto ${i+1}" type="number" min="0" step="0.01" value="${Number(p.monto||0).toFixed(2)}"><button type="button" data-pay-remove="${i}" aria-label="Quitar medio de pago" ${paymentParts.length===1?'disabled style="opacity:.35"':''}>×</button></div>`).join("");
- wrap.querySelectorAll("[data-pay-method]").forEach(el=>el.onchange=()=>{paymentParts[Number(el.dataset.payMethod)].metodo=el.value;updatePaymentStatus()});
+ wrap.innerHTML=paymentParts.map((p,i)=>`<div class="pay-split-row"><select data-pay-method="${i}" aria-label="Medio de pago ${i+1}"><option ${p.metodo==="Efectivo"?"selected":""}>Efectivo</option><option ${p.metodo==="QR"?"selected":""}>QR</option><option ${p.metodo==="Descuento corporativo 30%"?"selected":""}>Descuento corporativo 30%</option><option ${p.metodo==="Transferencia"?"selected":""}>Transferencia</option></select><input data-pay-amount="${i}" aria-label="Monto ${i+1}" type="number" min="0" step="0.01" value="${Number(p.monto||0).toFixed(2)}" ${p.metodo==="Descuento corporativo 30%"?'disabled title="Descuento calculado automáticamente"':""}><button type="button" data-pay-remove="${i}" aria-label="Quitar medio de pago" ${paymentParts.length===1?'disabled style="opacity:.35"':''}>×</button></div>`).join("");
+ wrap.querySelectorAll("[data-pay-method]").forEach(el=>el.onchange=()=>{const i=Number(el.dataset.payMethod);paymentParts[i].metodo=el.value;if(el.value==="Descuento corporativo 30%"&&!paymentParts.some((p,j)=>j!==i&&p.metodo!=="Descuento corporativo 30%")){const m=getMesa(state.selected);paymentParts.push({metodo:"QR",monto:Number(((m?total(m):0)*0.7).toFixed(2))});}updatePaymentStatus();renderPaymentParts()});
  wrap.querySelectorAll("[data-pay-amount]").forEach(el=>el.oninput=()=>{paymentParts[Number(el.dataset.payAmount)].monto=Math.max(0,Number(el.value)||0);updatePaymentStatus()});
  wrap.querySelectorAll("[data-pay-remove]").forEach(el=>el.onclick=()=>{if(paymentParts.length>1){paymentParts.splice(Number(el.dataset.payRemove),1);renderPaymentParts()}});
  updatePaymentStatus();
 }
 function updatePaymentStatus(){
- const m=getMesa(state.selected), expected=Number((m?total(m):0).toFixed(2));
- const assigned=Number(paymentParts.reduce((s,p)=>s+(Number(p.monto)||0),0).toFixed(2));
+ const m=getMesa(state.selected), original=Number((m?total(m):0).toFixed(2));
+ const discountApplied=paymentParts.some(p=>p.metodo==="Descuento corporativo 30%");
+ const discount=discountApplied?Number((original*0.30).toFixed(2)):0;
+ const expected=Number((original-discount).toFixed(2));
+ paymentParts.forEach(p=>{if(p.metodo==="Descuento corporativo 30%")p.monto=discount});
+ const assigned=Number(paymentParts.filter(p=>p.metodo!=="Descuento corporativo 30%").reduce((s,p)=>s+(Number(p.monto)||0),0).toFixed(2));
  const diff=Number((expected-assigned).toFixed(2));
  const box=document.getElementById("splitStatus");
  box.classList.toggle("bad",Math.abs(diff)>0.009);
- box.innerHTML=`<span>${Math.abs(diff)<=0.009?"Total cubierto":diff>0?"Falta por asignar":"Exceso asignado"}</span><strong>${money(assigned)} / ${money(expected)}${Math.abs(diff)>0.009?` · diferencia ${money(Math.abs(diff))}`:""}</strong>`;
- document.getElementById("confirmPay").disabled=Math.abs(diff)>0.009||paymentParts.some(p=>!p.metodo||!Number.isFinite(Number(p.monto))||Number(p.monto)<0);
+ document.getElementById("payTotal").textContent=money(expected);
+ box.innerHTML=`<span>${discountApplied?`Descuento 30%: ${money(discount)}`:"Total a cobrar"} · ${Math.abs(diff)<=0.009?"Total cubierto":diff>0?"Falta por asignar":"Exceso asignado"}</span><strong>${money(assigned)} / ${money(expected)}${Math.abs(diff)>0.009?` · diferencia ${money(Math.abs(diff))}`:""}</strong>`;
+ document.getElementById("confirmPay").disabled=Math.abs(diff)>0.009||!paymentParts.some(p=>p.metodo!=="Descuento corporativo 30%"&&Number(p.monto)>0)||paymentParts.some(p=>!p.metodo||!Number.isFinite(Number(p.monto))||Number(p.monto)<0);
  document.getElementById("confirmPay").style.opacity=document.getElementById("confirmPay").disabled?".5":"1";
 }
 function confirmPay(){
  const m=getMesa(state.selected);if(!m||!m.comanda.length)return;
- const expected=Number(total(m).toFixed(2));
- const pagos=paymentParts.map(p=>({metodo:p.metodo,monto:Number(Number(p.monto).toFixed(2))})).filter(p=>p.monto>0);
+ const original=Number(total(m).toFixed(2));
+ const descuentoCorporativo=paymentParts.some(p=>p.metodo==="Descuento corporativo 30%")?Number((original*0.30).toFixed(2)):0;
+ const expected=Number((original-descuentoCorporativo).toFixed(2));
+ const pagos=paymentParts.filter(p=>p.metodo!=="Descuento corporativo 30%").map(p=>({metodo:p.metodo,monto:Number(Number(p.monto).toFixed(2))})).filter(p=>p.monto>0);
  const paid=Number(pagos.reduce((s,p)=>s+p.monto,0).toFixed(2));
  if(Math.abs(expected-paid)>0.009){toast("El reparto de pagos no coincide con el total.");return}
  if(!pagos.length){toast("Introduce al menos un medio de pago.");return}
  const metodos=[...new Set(pagos.map(p=>p.metodo))];
- const sale={id:"V"+Date.now(),fecha:new Date().toISOString(),mesa:m.numero,salon:m.salon,zona:m.zona,subtotal:subtotal(m),iva:iva(m),total:expected,metodo:metodos.length===1?metodos[0]:"Mixto",pagos,items:m.comanda.map(l=>({productoId:l.productoId,nombre:lineName(l),precio:unitPrice(l),cantidad:l.cantidad}))};
+ const sale={id:"V"+Date.now(),fecha:new Date().toISOString(),mesa:m.numero,salon:m.salon,zona:m.zona,subtotal:subtotal(m),iva:iva(m),descuentoCorporativo,porcentajeDescuento:descuentoCorporativo?30:0,total:expected,metodo:metodos.length===1?metodos[0]:"Mixto",pagos,items:m.comanda.map(l=>({productoId:l.productoId,nombre:lineName(l),precio:unitPrice(l),cantidad:l.cantidad}))};
  state.ventas.push(sale);
  Object.assign(m,{estado:"libre",abiertaEn:null,comanda:[],iva:false,despachada:false});
  state.selected=null;saveState();
@@ -637,7 +643,7 @@ document.getElementById("dispatch").onclick=dispatchOrder;
 document.getElementById("charge").onclick=openPay;
 document.getElementById("closePay").onclick=()=>document.getElementById("payModal").classList.add("hidden");
 document.getElementById("cancelPay").onclick=()=>document.getElementById("payModal").classList.add("hidden");
-document.getElementById("addPaymentPart").onclick=()=>{const m=getMesa(state.selected);if(!m)return;const assigned=paymentParts.reduce((sum,p)=>sum+(Number(p.monto)||0),0);const left=Math.max(0,Number((total(m)-assigned).toFixed(2)));paymentParts.push({metodo:"QR",monto:left});renderPaymentParts()};
+document.getElementById("addPaymentPart").onclick=()=>{const m=getMesa(state.selected);if(!m)return;const original=Number((total(m)).toFixed(2));const discount=paymentParts.some(p=>p.metodo==="Descuento corporativo 30%")?Number((original*0.30).toFixed(2)):0;const expected=Number((original-discount).toFixed(2));const assigned=paymentParts.filter(p=>p.metodo!=="Descuento corporativo 30%").reduce((sum,p)=>sum+(Number(p.monto)||0),0);const left=Math.max(0,Number((expected-assigned).toFixed(2)));paymentParts.push({metodo:"QR",monto:left});renderPaymentParts()};
 document.getElementById("confirmPay").onclick=confirmPay;
 document.getElementById("filterYear").onchange=renderReports;
 document.getElementById("filterMonth").onchange=renderReports;
